@@ -101,13 +101,22 @@ var parse = function(nzip, data, callback){
   });
 };
 
-fetchRemote = function (nzip, callback) {
-  var zip3 = nzip.substr(0,3);
-  var url = JSONDATA+'/'+zip3+'.js';
-  jsonp(url, { name: '$yubin'}, function(error, data) {
-    if (!error) {
-      CACHE[zip3] = data;
-      parse(nzip, data, callback);
-    }
-  });
+
+fetchRemote = function(nzip, callback) {
+  var zip3 = nzip.substr(0, 3);
+  var url = JSONDATA + "/" + zip3 + ".js";
+
+  fetch(url, { name: "$yubin" })
+    .then(async response => {
+      try {
+        const responseData = await response.text();
+        const responseJson = responseData.replace("$yubin(", "").replace(");", "");
+
+        CACHE[zip3] = JSON.parse(responseJson);
+        parse(nzip, CACHE[zip3], callback);
+      } catch (error) {
+        console.warn(error);
+      }
+    })
+    .catch(error => console.warn(error));
 };
